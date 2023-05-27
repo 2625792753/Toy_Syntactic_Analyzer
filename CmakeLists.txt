@@ -1,0 +1,20 @@
+cmake_minimum_required(VERSION 3.14)
+
+project(Syntactic_Analyzer)
+
+set(CXX_STANDARD 17)
+set(CXX_STANDARD_REQUIRED ON)
+
+list(
+    APPEND
+    source
+    main.cpp
+    meta.hpp
+    util.hpp
+    syntactic_analyzer.hpp
+)
+
+add_executable(
+    t
+    ${source}
+)
