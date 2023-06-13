@@ -178,7 +178,7 @@ bool generate_all_vessels()
 
         if (_loop_flag)
         {
-            cout << "ERROR:: Generation faild.Loop detected." << endl;
+            cout << "ERROR:: Generation faild. Loop detected." << endl;
             return false;
         }
     }
@@ -200,40 +200,44 @@ bool generate_all_vessels()
     }
 
     // FOLLOW set generation
-    // MB
-    follow.emplace(primary_rule.first, '#');
-
-    for (auto rule : rulelist)
+    // 1.Conclude rules which related to First sets
+    for (auto i : rulelist)
     {
-        string expr = rule.second;
-
-        for (int i = 0; i < expr.length() - 1; ++i)
+        string expr = i.second;
+        set<char> need;
+        for (int j = 0; j < expr.length() - 1; ++j)
         {
-            if (non_terminators.find(expr[i]) != non_terminators.end() && expr[i] != '#')
+            char tar = expr[j];
+            if (non_terminators.find(tar) != non_terminators.end())
             {
-                char next = expr[i + 1];
+                // find non_terminator and reclusively solve nullable non_terminators
+                need.emplace(tar);
+            }
 
-                if (non_terminators.find(next) == non_terminators.end())
+            char next = expr[j + 1];
+            if (non_terminators.find(next) != non_terminators.end())
+            {
+                auto pos = first.equal_range(next);
+                while (pos.first != pos.second)
                 {
-                    follow.emplace(expr[i], next);
-                    sheet.emplace(expr[i], pair<char, string>(next, "#"));
-                }
-                else
-                {
-                    auto pos = first.equal_range(expr[i + 1]);
-                    while (pos.first != pos.second)
-                    {
-                        follow.emplace(expr[i], pos.first->second);
-                        sheet.emplace(expr[i], pair<char, string>(next, "#"));
+                    for (auto n : need)
+                        follow.emplace(n, pos.first->second);
 
-                        ++pos.first;
-                    }
+                    ++pos.first;
                 }
             }
+            else
+            {
+                for (auto n : need)
+                    follow.emplace(n, next);
+            }
+
+            if (nullalbe.find(next) == nullalbe.end())
+                need.clear();
         }
     }
 
-    // simplfiction
+    // simplification
     for (auto i : non_terminators)
     {
         set<char> symbols;
@@ -249,6 +253,80 @@ bool generate_all_vessels()
             follow.emplace(i, s);
     }
 
+    // 2.Conclude rules which merge follow sets
+    multimap<char, char> follow_form;
+    for (auto r : rulelist)
+    {
+        char from = r.first;
+        string expr = r.second;
+
+        for (int i = expr.length() - 1; i >= 0; --i)
+        {
+            if (non_terminators.find(expr[i]) != non_terminators.end())
+                follow_form.emplace(expr[i], from);
+
+            if (nullalbe.find(expr[i]) == nullalbe.end())
+                break;
+        }
+    }
+
+    // simplification on follow_form
+    for (auto i : non_terminators)
+    {
+        set<char> symbols;
+        auto pos = follow_form.equal_range(i);
+        while (pos.first != pos.second)
+        {
+            symbols.emplace(pos.first->second);
+            ++pos.first;
+        }
+
+        follow_form.erase(i);
+        for (auto s : symbols)
+            follow_form.emplace(i, s);
+    }
+
+    // Final concluding
+    int size = follow.size();
+    do
+    {
+        size = follow.size();
+        for (auto f : follow_form)
+        {
+            char to = f.first;
+            char from = f.second;
+
+            auto pos = follow.equal_range(from);
+            set<char> tmp;
+            while (pos.first != pos.second)
+            {
+                tmp.emplace(pos.first->second);
+                ++pos.first;
+            }
+
+            for (char obj : tmp)
+            {
+                follow.emplace(to, obj);
+            }
+        }
+
+        // simplification on each run
+        for (auto i : non_terminators)
+        {
+            set<char> symbols;
+            auto pos = follow.equal_range(i);
+            while (pos.first != pos.second)
+            {
+                symbols.emplace(pos.first->second);
+                ++pos.first;
+            }
+
+            follow.erase(i);
+            for (auto s : symbols)
+                follow.emplace(i, s);
+        }
+    } while (follow.size() > size);
+
 #ifdef _DEBUG_
     cout << "FIRST_SET:: " << endl;
     for (auto i : non_terminators)
@@ -262,6 +340,7 @@ bool generate_all_vessels()
             ++pos.first;
         }
 
+        cout << endl;
         cout << endl;
     }
 
@@ -277,6 +356,7 @@ bool generate_all_vessels()
             ++pos.first;
         }
 
+        cout << endl;
         cout << endl;
     }
 #endif

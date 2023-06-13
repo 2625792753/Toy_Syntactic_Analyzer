@@ -6,7 +6,7 @@
 
 int main(int argc, char const *argv[])
 {
-    if (generate_rulelist(argv[1]))
+    if (generate_rulelist("../../rules.txt"))
     {
 #ifdef _DEBUG_
         cout << "DEBUG_INFO:: " << endl;
