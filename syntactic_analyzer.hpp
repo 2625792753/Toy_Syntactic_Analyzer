@@ -12,7 +12,7 @@ set<char> non_terminators;
 multimap<char, char> first;
 set<char> nullalbe;
 multimap<char, char> follow;
-map<char, pair<char, string>> sheet;
+map<pair<char, char>, string> sheet;
 
 void load_non_terminators()
 {
@@ -139,7 +139,7 @@ bool search_first(char target, set<char> visited)
         {
             first.emplace(target, symbol);
             if (symbol != '#')
-                sheet.emplace(target, pair<char, string>(symbol, expr));
+                sheet.emplace(pair<char, char>(target, symbol), expr);
         }
         else
         {
@@ -153,6 +153,14 @@ bool search_first(char target, set<char> visited)
                     first.emplace(target, pos.first->second);
                     ++pos.first;
                 }
+            }
+
+            auto pos = first.equal_range(symbol);
+            while (pos.first != pos.second)
+            {
+                if (pos.first->second != '#')
+                    sheet.emplace(pair<char, char>(target, pos.first->second), expr);
+                ++pos.first;
             }
         }
 
@@ -328,7 +336,18 @@ bool generate_all_vessels()
     } while (follow.size() > size);
 
     // Sheet generation
-    
+    for (auto r : rulelist)
+    {
+        if (r.second == "#")
+        {
+            auto pos = follow.equal_range(r.first);
+            while (pos.first != pos.second)
+            {
+                sheet.emplace(pair<char, char>(r.first, pos.first->second), r.second);
+                ++pos.first;
+            }
+        }
+    }
 
 #ifdef _DEBUG_
     cout << "FIRST_SET:: " << endl;
@@ -365,7 +384,7 @@ bool generate_all_vessels()
 
     cout << "SHEET::" << endl;
     for (auto i : sheet)
-        cout << i.first << '\t' << i.second.first << '\t' << i.second.second << endl;
+        cout << i.first.first << '\t' << i.first.second << '\t' << i.second << endl;
 
     cout << endl;
     cout << endl;
