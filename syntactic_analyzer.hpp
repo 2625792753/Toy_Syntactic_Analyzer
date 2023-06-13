@@ -327,6 +327,9 @@ bool generate_all_vessels()
         }
     } while (follow.size() > size);
 
+    // Sheet generation
+    
+
 #ifdef _DEBUG_
     cout << "FIRST_SET:: " << endl;
     for (auto i : non_terminators)
@@ -359,6 +362,13 @@ bool generate_all_vessels()
         cout << endl;
         cout << endl;
     }
+
+    cout << "SHEET::" << endl;
+    for (auto i : sheet)
+        cout << i.first << '\t' << i.second.first << '\t' << i.second.second << endl;
+
+    cout << endl;
+    cout << endl;
 #endif
 
     return true;
