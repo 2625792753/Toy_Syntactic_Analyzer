@@ -14,6 +14,8 @@ list(
     syntactic_analyzer.hpp
 )
 
+set(CMAKE_BUILD_TYPE Debug)
+
 add_executable(
     t
     ${source}

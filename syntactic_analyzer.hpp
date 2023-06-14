@@ -207,147 +207,147 @@ bool generate_all_vessels()
             first.emplace(i, s);
     }
 
-    // FOLLOW set generation
-    // 1.Conclude rules which related to First sets
-    for (auto i : rulelist)
-    {
-        string expr = i.second;
-        set<char> need;
-        for (int j = 0; j < expr.length() - 1; ++j)
-        {
-            char tar = expr[j];
-            if (non_terminators.find(tar) != non_terminators.end())
-            {
-                // find non_terminator and reclusively solve nullable non_terminators
-                need.emplace(tar);
-            }
+    // // FOLLOW set generation
+    // // 1.Conclude rules which related to First sets
+    // for (auto i : rulelist)
+    // {
+    //     string expr = i.second;
+    //     set<char> need;
+    //     for (int j = 0; j < expr.length() - 1; ++j)
+    //     {
+    //         char tar = expr[j];
+    //         if (non_terminators.find(tar) != non_terminators.end())
+    //         {
+    //             // find non_terminator and reclusively solve nullable non_terminators
+    //             need.emplace(tar);
+    //         }
 
-            char next = expr[j + 1];
-            if (non_terminators.find(next) != non_terminators.end())
-            {
-                auto pos = first.equal_range(next);
-                while (pos.first != pos.second)
-                {
-                    for (auto n : need)
-                        follow.emplace(n, pos.first->second);
+    //         char next = expr[j + 1];
+    //         if (non_terminators.find(next) != non_terminators.end())
+    //         {
+    //             auto pos = first.equal_range(next);
+    //             while (pos.first != pos.second)
+    //             {
+    //                 for (auto n : need)
+    //                     follow.emplace(n, pos.first->second);
 
-                    ++pos.first;
-                }
-            }
-            else
-            {
-                for (auto n : need)
-                    follow.emplace(n, next);
-            }
+    //                 ++pos.first;
+    //             }
+    //         }
+    //         else
+    //         {
+    //             for (auto n : need)
+    //                 follow.emplace(n, next);
+    //         }
 
-            if (nullalbe.find(next) == nullalbe.end())
-                need.clear();
-        }
-    }
+    //         if (nullalbe.find(next) == nullalbe.end())
+    //             need.clear();
+    //     }
+    // }
 
-    // simplification
-    for (auto i : non_terminators)
-    {
-        set<char> symbols;
-        auto pos = follow.equal_range(i);
-        while (pos.first != pos.second)
-        {
-            symbols.emplace(pos.first->second);
-            ++pos.first;
-        }
+    // // simplification
+    // for (auto i : non_terminators)
+    // {
+    //     set<char> symbols;
+    //     auto pos = follow.equal_range(i);
+    //     while (pos.first != pos.second)
+    //     {
+    //         symbols.emplace(pos.first->second);
+    //         ++pos.first;
+    //     }
 
-        follow.erase(i);
-        for (auto s : symbols)
-            follow.emplace(i, s);
-    }
+    //     follow.erase(i);
+    //     for (auto s : symbols)
+    //         follow.emplace(i, s);
+    // }
 
-    // 2.Conclude rules which merge follow sets
-    multimap<char, char> follow_form;
-    for (auto r : rulelist)
-    {
-        char from = r.first;
-        string expr = r.second;
+    // // 2.Conclude rules which merge follow sets
+    // multimap<char, char> follow_form;
+    // for (auto r : rulelist)
+    // {
+    //     char from = r.first;
+    //     string expr = r.second;
 
-        for (int i = expr.length() - 1; i >= 0; --i)
-        {
-            if (non_terminators.find(expr[i]) != non_terminators.end())
-                follow_form.emplace(expr[i], from);
+    //     for (int i = expr.length() - 1; i >= 0; --i)
+    //     {
+    //         if (non_terminators.find(expr[i]) != non_terminators.end())
+    //             follow_form.emplace(expr[i], from);
 
-            if (nullalbe.find(expr[i]) == nullalbe.end())
-                break;
-        }
-    }
+    //         if (nullalbe.find(expr[i]) == nullalbe.end())
+    //             break;
+    //     }
+    // }
 
-    // simplification on follow_form
-    for (auto i : non_terminators)
-    {
-        set<char> symbols;
-        auto pos = follow_form.equal_range(i);
-        while (pos.first != pos.second)
-        {
-            symbols.emplace(pos.first->second);
-            ++pos.first;
-        }
+    // // simplification on follow_form
+    // for (auto i : non_terminators)
+    // {
+    //     set<char> symbols;
+    //     auto pos = follow_form.equal_range(i);
+    //     while (pos.first != pos.second)
+    //     {
+    //         symbols.emplace(pos.first->second);
+    //         ++pos.first;
+    //     }
 
-        follow_form.erase(i);
-        for (auto s : symbols)
-            follow_form.emplace(i, s);
-    }
+    //     follow_form.erase(i);
+    //     for (auto s : symbols)
+    //         follow_form.emplace(i, s);
+    // }
 
-    // Final concluding
-    int size = follow.size();
-    do
-    {
-        size = follow.size();
-        for (auto f : follow_form)
-        {
-            char to = f.first;
-            char from = f.second;
+    // // Final concluding
+    // int size = follow.size();
+    // do
+    // {
+    //     size = follow.size();
+    //     for (auto f : follow_form)
+    //     {
+    //         char to = f.first;
+    //         char from = f.second;
 
-            auto pos = follow.equal_range(from);
-            set<char> tmp;
-            while (pos.first != pos.second)
-            {
-                tmp.emplace(pos.first->second);
-                ++pos.first;
-            }
+    //         auto pos = follow.equal_range(from);
+    //         set<char> tmp;
+    //         while (pos.first != pos.second)
+    //         {
+    //             tmp.emplace(pos.first->second);
+    //             ++pos.first;
+    //         }
 
-            for (char obj : tmp)
-            {
-                follow.emplace(to, obj);
-            }
-        }
+    //         for (char obj : tmp)
+    //         {
+    //             follow.emplace(to, obj);
+    //         }
+    //     }
 
-        // simplification on each run
-        for (auto i : non_terminators)
-        {
-            set<char> symbols;
-            auto pos = follow.equal_range(i);
-            while (pos.first != pos.second)
-            {
-                symbols.emplace(pos.first->second);
-                ++pos.first;
-            }
+    //     // simplification on each run
+    //     for (auto i : non_terminators)
+    //     {
+    //         set<char> symbols;
+    //         auto pos = follow.equal_range(i);
+    //         while (pos.first != pos.second)
+    //         {
+    //             symbols.emplace(pos.first->second);
+    //             ++pos.first;
+    //         }
 
-            follow.erase(i);
-            for (auto s : symbols)
-                follow.emplace(i, s);
-        }
-    } while (follow.size() > size);
+    //         follow.erase(i);
+    //         for (auto s : symbols)
+    //             follow.emplace(i, s);
+    //     }
+    // } while (follow.size() > size);
 
-    // Sheet generation
-    for (auto r : rulelist)
-    {
-        if (r.second == "#")
-        {
-            auto pos = follow.equal_range(r.first);
-            while (pos.first != pos.second)
-            {
-                sheet.emplace(pair<char, char>(r.first, pos.first->second), r.second);
-                ++pos.first;
-            }
-        }
-    }
+    // // Sheet generation
+    // for (auto r : rulelist)
+    // {
+    //     if (r.second == "#")
+    //     {
+    //         auto pos = follow.equal_range(r.first);
+    //         while (pos.first != pos.second)
+    //         {
+    //             sheet.emplace(pair<char, char>(r.first, pos.first->second), r.second);
+    //             ++pos.first;
+    //         }
+    //     }
+    // }
 
 #ifdef _DEBUG_
     cout << "FIRST_SET:: " << endl;

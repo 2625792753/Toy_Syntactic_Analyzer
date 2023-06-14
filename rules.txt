@@ -1,8 +1,8 @@
-E=AB
-E=a
-A=C
-A=bDA
-B=#
-C=cAD
-C=#
-D=dBe
+E=TW
+W=+TW
+W=#
+T=FR
+R=*FR
+R=#
+F=(E)
+F=i
