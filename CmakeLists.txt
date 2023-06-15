@@ -21,6 +21,6 @@ list(
 set(CMAKE_BUILD_TYPE Debug)
 
 add_executable(
-    t
+    Syntactic_Analyzer
     ${source}
 )
