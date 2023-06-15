@@ -49,3 +49,17 @@ bool generate_rulelist(string path = rule_path)
 
     return true;
 }
+
+bool load_input(string path = input_path)
+{
+    ifstream in(path, ios::in);
+    if (!in.is_open())
+    {
+        cout << BAD_FILE_MSG(path) << endl;
+        return false;
+    }
+
+    in >> input;
+    input += '#';
+    return true;
+}
